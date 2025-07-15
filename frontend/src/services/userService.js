@@ -14,9 +14,16 @@ const Register = async (payload) =>
     url: apiUrls.register,
     data: payload,
   });
+
+const FetchUserList=async()=>Request({
+  url:`${apiUrls.users}/all`,
+  method:"GET",
+  secure:true,
+})
 const userService = {
   Login,
   Register,
+  FetchUserList,
 };
 
 export default userService;

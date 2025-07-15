@@ -3,9 +3,10 @@ const UserModel = require("../models/userModel");
 const MessageModel = require("../models/messageModel");
 const httpStatusCode = require("../constants/httpStatusCode");
 
-const accessChat = async (req, res) => {
+const createChat = async (req, res) => {
   try {
-    const { userId } = req.body;
+    const { users, chatName, isGroupChat } = req.body;
+    const userId = req.user._id;
     if (!userId) {
       return res.status(httpStatusCode.BAD_REQUEST).json({
         success: false,
@@ -16,7 +17,7 @@ const accessChat = async (req, res) => {
     let isChat = await ChatModel.find({
       isGroupChat: false,
       users: {
-        $all: [req.user._id, userId],
+        $all: [req.user._id, ...users],
       },
     })
       .populate("users", "-password")
@@ -33,17 +34,38 @@ const accessChat = async (req, res) => {
         message: "chat retrieve successfully",
         data: isChat[0],
       });
-    } else {
-      const chatData = {
-        chatName: "sender",
-        isGroupChat: false,
-        users: [req.user._id, userId],
-      };
-      const createdChat = await ChatModel.create(chatData);
-      const fullChat = await ChatModel.findOne({
-        _id: createdChat._id,
-      }).populate("users", "-password");
     }
+    let chatData;
+    if(isGroupChat){
+      const groupAdmin=users[0];
+      chatData=await ChatModel.create({
+        chatName:chatName,
+        isGroupChat:isGroupChat,
+        users:[req.user._id,...users],
+        createdBy:userId,
+        groupAdmin:groupAdmin,
+      });
+    }else{
+      chatData=await ChatModel.create({
+        chatName:chatName,
+        isGroupChat:isGroupChat,
+        users:[req.user._id,...users],
+        createdBy:userId,
+      });
+    }
+    
+    const createdChat = await ChatModel.create(chatData);
+    if (!createdChat) {
+      return res.status(httpStatusCode.INTERNAL_SERVER_ERROR).json({
+        success: false,
+        message: "chat not created",
+      });
+    }
+    return res.status(httpStatusCode.OK).json({
+      success: true,
+      message: "chat created successfully",
+      data: createdChat,
+    });
   } catch (error) {
     console.log("error while access chat:", error);
     return res.status(httpStatusCode.INTERNAL_SERVER_ERROR).json({
@@ -88,4 +110,4 @@ const fetchChats = async (req, res) => {
   }
 };
 
-module.exports = { accessChat, fetchChats };
+module.exports = { createChat, fetchChats };

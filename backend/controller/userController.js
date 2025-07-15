@@ -101,13 +101,7 @@ const Register = async (req, res) => {
 //view all user
 const ViewAllUser = async (req, res) => {
   try {
-    const AllUser = await UserModel.find().populate({
-      path: "subscription",
-      populate: {
-        path: "plan",
-        model: "SubscriptionPlan",
-      },
-    });
+    const AllUser = await UserModel.find().select("-password");
     if (!AllUser) {
       return res.status(httpStatusCode.NOT_FOUND).json({
         success: false,
