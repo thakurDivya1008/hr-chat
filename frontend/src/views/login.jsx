@@ -32,8 +32,8 @@ const Login = () => {
         toast.success("Successfully logged in!");
        
         dispatch(login(response?.data));
-        localStorage.setItem("user", JSON.stringify(response?.data));
-        localStorage.setItem("access_token", response?.data?.token);
+        localStorage.setItem("user", JSON.stringify(response?.data?.data?.User));
+        localStorage.setItem("access_token", response?.data?.data?.token);
         navigate("/dashboard");
         setLoader(false);
       }

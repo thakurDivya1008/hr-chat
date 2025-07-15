@@ -8,10 +8,13 @@ import {
 } from "lucide-react";
 import React, { useState, useRef, useEffect } from "react";
 import profileImg from "@/assets/images/profile-img.png";
-import { socket } from "@/services/socketHandler";
+// import { socket } from "@/services/socketHandler";
 import { useDispatch, useSelector } from "react-redux";
+import { useSocket } from "@/services/socketContext";
+
 
 const ChatScreen = () => {
+  const socket = useSocket();
   const dispatch = useDispatch();
   const { activeChat } = useSelector((state) => state.chat);
   const { user } = useSelector((state) => state.auth);
@@ -32,7 +35,7 @@ const ChatScreen = () => {
   };
 
   // Send message function
-  const sendMessage = () => {
+  const handleSendMessage = () => {
     if (newMessage.trim() === "") return;
 
     // Create new message object
@@ -49,12 +52,14 @@ const ChatScreen = () => {
     // Add to messages
     setMessages([...messages, message]);
     setNewMessage(""); // Clear input
+
+   socket.sendMessage(message)
   };
 
   // Handle enter key press
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
-      sendMessage();
+      handleSendMessage();
     }
   };
 
@@ -100,24 +105,21 @@ const ChatScreen = () => {
           {messages.map((message) => (
             <div
               key={message.id}
-              className={`flex ${
-                message.sender === "self" ? "justify-end" : "justify-start"
-              }`}
+              className={`flex ${message.sender === "self" ? "justify-end" : "justify-start"
+                }`}
             >
               <div
-                className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl ${
-                  message.sender === "self"
+                className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl ${message.sender === "self"
                     ? "bg-blue-500 text-white rounded-tr-none"
                     : "bg-gray-200 text-gray-800 rounded-tl-none"
-                }`}
+                  }`}
               >
                 <p>{message.text}</p>
                 <p
-                  className={`text-xs mt-1 ${
-                    message.sender === "self"
+                  className={`text-xs mt-1 ${message.sender === "self"
                       ? "text-blue-100"
                       : "text-gray-500"
-                  }`}
+                    }`}
                 >
                   {message.timestamp}
                 </p>
@@ -142,12 +144,11 @@ const ChatScreen = () => {
           />
           <Smile className="text-gray-500 cursor-pointer mx-2" size={20} />
           <button
-            onClick={sendMessage}
-            className={`rounded-full p-2 ${
-              newMessage.trim()
+            onClick={handleSendMessage}
+            className={`rounded-full p-2 ${newMessage.trim()
                 ? "bg-blue-500 text-white"
                 : "bg-gray-300 text-gray-500"
-            }`}
+              }`}
             disabled={!newMessage.trim()}
           >
             <Send size={18} />

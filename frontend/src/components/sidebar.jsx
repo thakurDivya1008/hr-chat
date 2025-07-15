@@ -2,12 +2,18 @@ import React from "react";
 import profileImg from "@/assets/images/profile-img.png";
 import { Search } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
+import { useNavigate } from "react-router-dom";
 const Sidebar = () => {
+  const navigate=useNavigate();
+  const handleLogout = () => {
+    localStorage.clear();
+    navigate("/login")
+  }
   return (
     <div className="rounded-2xl border bg-white h-[96vh] w-full p-2">
       <div className="flex items-center justify-between m-0 p-0">
         <div className="flex items-center gap-[10px]">
-          <div className="flex rounded-full h-[45px] w-[45px]  relative">
+          <div className="flex rounded-full h-[45px] w-[45px]  relative" onClick={() => handleLogout()}>
             <img
               src={profileImg}
               alt=""

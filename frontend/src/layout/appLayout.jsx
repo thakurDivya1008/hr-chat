@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { login } from "@/redux/slices/authSlice";
 
 import { setMobileView } from "@/redux/slices/sidebarSlice";
+import SocketProvider from "@/services/socketContext";
 
 const AppLayout = () => {
   const dispatch = useDispatch();
@@ -37,29 +38,31 @@ const AppLayout = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, [dispatch]);
   return (
-    <div className="bg-gray-100">
-      <div
-        className="w-full flex gap-[15px]  h-[100vh] overflow-hidden pt-5"
-        style={{ scrollbarWidth: "none" }}
-      >
+    <SocketProvider>
+
+      <div className="bg-gray-100">
         <div
-          className={`transition-all duration-500 md:w-[390px] w-[250px] absolute md:relative md:px-2 md:pe-0  z-10 ${
-            isOpen ? "left-0" : "left-[-350px]"
-          } `}
-        >
-          <Sidebar role={user?.role} />
-        </div>
-        <div
-          className="w-full h-full overflow-y-scroll pe-5"
+          className="w-full flex gap-[15px]  h-[100vh] overflow-hidden pt-5"
           style={{ scrollbarWidth: "none" }}
         >
-          <Routes>
-            <Route path="/" element={<ChatScreen />} />
-          </Routes>
+          <div
+            className={`transition-all duration-500 md:w-[390px] w-[250px] absolute md:relative md:px-2 md:pe-0  z-10 ${isOpen ? "left-0" : "left-[-350px]"
+              } `}
+          >
+            <Sidebar role={user?.role} />
+          </div>
+          <div
+            className="w-full h-full overflow-y-scroll pe-5"
+            style={{ scrollbarWidth: "none" }}
+          >
+            <Routes>
+              <Route path="/" element={<ChatScreen />} />
+            </Routes>
+          </div>
+          {activeMacro && <div className="w-[300px]"></div>}
         </div>
-        {activeMacro && <div className="w-[300px]"></div>}
       </div>
-    </div>
+    </SocketProvider>
   );
 };
 

@@ -45,6 +45,10 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/", mainRoutes);
 
 const port = PORT || 5000;
-app.listen(port, () => {
+// app.listen(port, () => {
+//   console.log(`app is running on http://localhost:${port} `);
+// });
+
+server.listen(port, () => {
   console.log(`app is running on http://localhost:${port} `);
 });
