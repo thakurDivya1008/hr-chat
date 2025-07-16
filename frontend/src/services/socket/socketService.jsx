@@ -1,6 +1,6 @@
 import io from 'socket.io-client';
 import apiUrls from '@/config/apiUrls';
-import { setMessages } from '@/redux/slices/chatSlice';
+import { setMessages, setTypingUser } from '@/redux/slices/chatSlice';
 
 class SocketService{
     socket =null;
@@ -26,6 +26,8 @@ class SocketService{
         this.socket.on("disconnect",this.onDisconnect);
         this.socket.on("connectionError",this.onConnectionError);
         this.socket.on("message received",this.onMessageReceived);
+        this.socket.on("typing",this.onTyping);
+        this.socket.on("stop typing",this.onStopTyping);
     }
 
     //Emitters
@@ -58,6 +60,25 @@ class SocketService{
     sendMessage(data){
         this.socket.emit("new message",data);
     }
+
+    //Typing
+    onTyping=(data)=>{
+        console.log("typing",data);
+        this.dispatch(setTypingUser(data.user));
+    }
+    onStopTyping=(data)=>{
+        console.log("stop typing",data);
+        this.dispatch(setTypingUser(null));
+    }
+
+    //typing from frontend
+    typing=(chatId,userId)=>{
+        this.socket.emit("typing",chatId,userId);
+    }
+    stopTyping=(chatId,userId)=>{
+        this.socket.emit("stop typing",chatId,userId);
+    }
+
 
     disconnect(){
         if(this.socket){

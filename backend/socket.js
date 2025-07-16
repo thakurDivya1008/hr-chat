@@ -10,7 +10,10 @@ const initializeSocket = (server) => {
   const io = new Server(server, {
     cors: {
       origin: "*",
-      methods: ["GET", "POST"],
+      methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"],
+      preflightContinue: false,
+      optionsSuccessStatus: 204,
+      credentials: true,
     },
   });
 
@@ -155,6 +158,14 @@ const initializeSocket = (server) => {
         console.log("Error in new message handler:", error);
         socket.emit("error", { message: "Failed to send message" });
       }
+    });
+
+    //handle typing
+    socket.on("typing", (chatId, userId) => {
+      io.to(chatId).emit("typing", { user: userId });
+    });
+    socket.on("stop typing", (chatId, userId) => {
+      io.to(chatId).emit("stop typing", { user: userId });
     });
 
     // Handle disconnection

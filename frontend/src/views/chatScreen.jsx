@@ -20,30 +20,69 @@ const ChatScreen = () => {
   const socket = useSocket();
   const dispatch = useDispatch();
   const { activeChat } = useSelector((state) => state.chat);
-  const { user } = useSelector((state) => state.auth);
-  const messages=useSelector((state)=>state.chat.activeChat?.messages);
+  const { user,userList } = useSelector((state) => state.auth);
+  const messages = useSelector((state) => state.chat.activeChat?.messages);
   const [newMessage, setNewMessage] = useState("");
   const messageEndRef = useRef(null);
+  const [isTyping, setIsTyping] = useState(false);
+  const [typingUser, setTypingUser] = useState(null);
+  let typingTimeout = useRef();
+  const [typingDots, setTypingDots] = useState(1);
 
   // Auto-scroll to bottom when new messages are added
   useEffect(() => {
     messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  useEffect(() => {
+    function handleTyping(data) {
+      if (data.user !== user?._id) setTypingUser(data.user);
+    }
+    function handleStopTyping(data) {
+      if (data.user !== user?._id) setTypingUser(null);
+    }
+    socket.socket?.on("typing", handleTyping);
+    socket.socket?.on("stop typing", handleStopTyping);
+
+    return () => {
+      socket.socket?.off("typing", handleTyping);
+      socket.socket?.off("stop typing", handleStopTyping);
+    };
+  }, [socket, user]);
+
+  useEffect(() => {
+    if (typingUser) {
+      const interval = setInterval(() => {
+        setTypingDots((prev) => (prev % 3) + 1);
+      }, 400);
+      return () => clearInterval(interval);
+    } else {
+      setTypingDots(1);
+    }
+  }, [typingUser]);
+
   // Handle input change
   const handleInputChange = (e) => {
     setNewMessage(e.target.value);
+    socket.typing(activeChat?._id, user?._id);
+
+    // Debounce stop typing
+    if (typingTimeout.current) clearTimeout(typingTimeout.current);
+    typingTimeout.current = setTimeout(() => {
+      socket.stopTyping(activeChat?._id, user?._id);
+    }, 1500);
   };
 
   // Send message function
   const handleSendMessage = () => {
     if (newMessage.trim() === "") return;
+    socket.stopTyping(activeChat?._id, user?._id);
     setNewMessage(""); // Clear input
 
-    const payload={
-      chatId:activeChat?._id,
-      message:newMessage,
-      sender:user?._id,
+    const payload = {
+      chatId: activeChat?._id,
+      message: newMessage,
+      sender: user?._id,
     }
     socket.sendMessage(payload)
   };
@@ -76,6 +115,14 @@ const ChatScreen = () => {
                     {activeChat?.isGroupChat ? activeChat?.chatName : activeChat?.users.find((items) => items?._id !== user?._id)?.username}
                   </p>
                   <p className="text-xs text-gray-500">{activeChat?.isGroupChat ? "Group Chat" : "Personal Chat"}</p>
+
+                  {
+                    typingUser && (
+                      <div className="text-xs text-black mb-2">
+                        typing...
+                      </div>
+                    )
+                  }
                 </div>
               </div>
               <div className="flex items-center gap-4">
@@ -121,6 +168,14 @@ const ChatScreen = () => {
                     </div>
                   </div>
                 ))}
+                {typingUser && (
+                  <div className="text-xs text-black mb-2 flex items-center gap-1">
+                    {userList.find((item) => item?._id === typingUser)?.username || "Someone"} is typing
+                    <span>
+                      {".".repeat(typingDots)}
+                    </span>
+                  </div>
+                )}
                 <div ref={messageEndRef} />
               </div>
             </div>
