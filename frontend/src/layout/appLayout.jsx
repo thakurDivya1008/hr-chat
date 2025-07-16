@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { login } from "@/redux/slices/authSlice";
 
 import { setMobileView } from "@/redux/slices/sidebarSlice";
-import SocketProvider from "@/services/socketContext";
+import SocketProvider from "@/services/socket/socketContext";
 
 const AppLayout = () => {
   const dispatch = useDispatch();

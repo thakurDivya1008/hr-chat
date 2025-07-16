@@ -23,6 +23,7 @@ const createChat = async (req, res) => {
       .populate("users", "-password")
       .populate("latestMessage");
 
+
     isChat = await UserModel.populate(isChat, {
       path: "latestMessage.sender",
       select: "username email",
@@ -38,20 +39,20 @@ const createChat = async (req, res) => {
     let chatData;
     if(isGroupChat){
       const groupAdmin=users[0];
-      chatData=await ChatModel.create({
+      chatData={
         chatName:chatName,
         isGroupChat:isGroupChat,
         users:[req.user._id,...users],
         createdBy:userId,
         groupAdmin:groupAdmin,
-      });
+      };
     }else{
-      chatData=await ChatModel.create({
+      chatData={
         chatName:chatName,
         isGroupChat:isGroupChat,
         users:[req.user._id,...users],
         createdBy:userId,
-      });
+      };
     }
     
     const createdChat = await ChatModel.create(chatData);
@@ -88,6 +89,13 @@ const fetchChats = async (req, res) => {
     })
       .populate("users", "-password")
       .populate("latestMessage")
+      .populate({
+        path:"messages",
+        populate:{
+          path:"sender",
+          select:"username email",
+        }
+      })
       .sort({ updatedAt: -1 });
 
     const populatedChats = await UserModel.populate(chats, {

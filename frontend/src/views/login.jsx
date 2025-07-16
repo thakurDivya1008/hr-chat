@@ -11,7 +11,7 @@ import { SyncLoader } from "react-spinners";
 import { login } from "@/redux/slices/authSlice";
 import { useDispatch } from "react-redux";
 import { Oval } from "react-loader-spinner";
-import userService from "@/services/userService";
+import userService from "@/services/api/userService";
 const Login = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();

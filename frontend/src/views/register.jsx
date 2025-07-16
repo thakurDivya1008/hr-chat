@@ -10,7 +10,7 @@ import axios from "axios";
 import { SyncLoader } from "react-spinners";
 import { FiUser } from "react-icons/fi";
 import { Oval } from "react-loader-spinner";
-import userService from "@/services/userService";
+import userService from "@/services/api/userService";
 
 import { Phone } from "lucide-react";
 const Register = () => {

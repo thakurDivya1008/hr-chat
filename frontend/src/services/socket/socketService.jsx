@@ -1,5 +1,6 @@
 import io from 'socket.io-client';
 import apiUrls from '@/config/apiUrls';
+import { setMessages } from '@/redux/slices/chatSlice';
 
 class SocketService{
     socket =null;
@@ -24,7 +25,7 @@ class SocketService{
         this.socket.on("connect",this.onConnect);
         this.socket.on("disconnect",this.onDisconnect);
         this.socket.on("connectionError",this.onConnectionError);
-        this.socket.on("message-received",this.onMessageReceived);
+        this.socket.on("message received",this.onMessageReceived);
     }
 
     //Emitters
@@ -39,10 +40,23 @@ class SocketService{
     }
     onMessageReceived=(message)=>{
         console.log("message received",message);
+        this.dispatch(setMessages(message));
     }
 
-    sendMessage(message){
-        this.socket.emit("new message",message);
+    //Join a chat room
+    joinChatRoom=(chatId)=>{
+        const userId=JSON.parse(localStorage.getItem("user"))?._id;
+        console.log("join chat room",chatId);
+        const payload={
+            chatId,
+            userId,
+        }
+        console.log("payload",payload);
+        this.socket.emit("join chat",payload);
+    }
+
+    sendMessage(data){
+        this.socket.emit("new message",data);
     }
 
     disconnect(){
