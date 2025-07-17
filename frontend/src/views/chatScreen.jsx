@@ -6,6 +6,11 @@ import {
   Paperclip,
   Smile,
   MessageCircle,
+  Image,
+  Video,
+  File,
+  VoteIcon,
+  FileAudio,
 } from "lucide-react";
 import React, { useState, useRef, useEffect } from "react";
 import profileImg from "@/assets/images/profile-img.png";
@@ -14,7 +19,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { useSocket } from "@/services/socket/socketContext";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { formatDateTime, formatTime,getDayLabel } from "@/utils/dateFormater";
+import { formatDateTime, formatTime, getDayLabel } from "@/utils/dateFormater";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 
 
@@ -31,11 +37,16 @@ const ChatScreen = () => {
   const [typingUser, setTypingUser] = useState(null);
   let typingTimeout = useRef();
   const [typingDots, setTypingDots] = useState(1);
+  const [openAttachmentPopover, setOpenAttachmentPopover] = useState(false);
+  const [attachmentType, setAttachmentType] = useState(null);
+  const [attachmentFile, setAttachmentFile] = useState(null);
+  const [attachmentPreview, setAttachmentPreview] = useState(null);
+  const attachmentRef = useRef(null);
 
   // Auto-scroll to bottom when new messages are added
   useEffect(() => {
     messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, typingUser]);
 
   useEffect(() => {
     function handleTyping(data) {
@@ -97,13 +108,22 @@ const ChatScreen = () => {
     }
   };
 
-  
+  //handle pick attachment
+  const handlePickAttachment = () => {
+    attachmentRef.current?.click();
+  }
+  const handleAttachmentChange = (e) => {
+    setAttachmentFile(e.target.files[0]);
+    setAttachmentPreview(URL.createObjectURL(e.target.files[0]));
+  }
+
+
 
   return (
     <>
       {
         activeChat ? (
-          <div className="w-full bg-white border rounded-2xl h-[96vh] flex flex-col">
+          <div className="relative w-full bg-white border rounded-2xl h-[96vh] flex flex-col">
             {/**header  */}
             <div className="flex items-center justify-between border-b p-4 shadow-sm rounded-t-2xl">
               <div className="flex items-center gap-3">
@@ -145,6 +165,8 @@ const ChatScreen = () => {
                 />
               </div>
             </div>
+
+
 
             {/** message list */}
             <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
@@ -206,10 +228,67 @@ const ChatScreen = () => {
               </div>
             </div>
 
+            {/** attachment preview */}
+            {
+              attachmentPreview && (
+                <div className=" h-[200px] w-[200px] relative rounded-3xl border border-gray-200  bg-gray-50">
+                    <img src={attachmentPreview} alt="Attachment Preview" className="w-full h-full object-cover" />
+                  </div>
+               
+              )
+            }
             {/**input box */}
             <div className="border-t p-3">
               <div className="flex items-center bg-gray-100 rounded-full px-4 py-2">
-                <Paperclip className="text-gray-500 cursor-pointer mr-2" size={20} />
+                <Popover open={openAttachmentPopover} onOpenChange={setOpenAttachmentPopover}>
+                  <PopoverTrigger>
+                    <Paperclip onClick={() => setOpenAttachmentPopover(!openAttachmentPopover)} className={`text-gray-500 cursor-pointer mr-2 ${openAttachmentPopover ? "rotate-90" : ""} transition-all duration-300`} size={20} />
+                  </PopoverTrigger>
+                  <PopoverContent className="w-64 p-3 rounded-3xl shadow-xl border border-gray-200 bg-white/95 backdrop-blur-sm">
+                    <div className="grid grid-cols-2 gap-2">
+                      <div onClick={() => {
+                        handlePickAttachment();
+                        setAttachmentType("image");
+                      }} className="flex flex-col items-center gap-2 cursor-pointer hover:bg-blue-50 rounded-xl p-3 transition-all duration-200 group">
+                        <div className="bg-blue-100 rounded-full p-3 group-hover:bg-blue-200 transition-colors">
+                          <Image className="text-blue-600" size={20} />
+                        </div>
+                        <p className="text-sm font-medium text-gray-700">Image</p>
+
+                      </div>
+                      <div onClick={() => setAttachmentType("video")} className="flex flex-col items-center gap-2 cursor-pointer hover:bg-purple-50 rounded-xl p-3 transition-all duration-200 group">
+                        <div className="bg-purple-100 rounded-full p-3 group-hover:bg-purple-200 transition-colors">
+                          <Video className="text-purple-600" size={20} />
+                        </div>
+                        <p className="text-sm font-medium text-gray-700">Video</p>
+                      </div>
+                      <div onClick={() => setAttachmentType("document")} className="flex flex-col items-center gap-2 cursor-pointer hover:bg-green-50 rounded-xl p-3 transition-all duration-200 group">
+                        <div className="bg-green-100 rounded-full p-3 group-hover:bg-green-200 transition-colors">
+                          <File className="text-green-600" size={20} />
+                        </div>
+                        <p className="text-sm font-medium text-gray-700">Document</p>
+                      </div>
+                      <div onClick={() => setAttachmentType("audio")} className="flex flex-col items-center gap-2 cursor-pointer hover:bg-orange-50 rounded-xl p-3 transition-all duration-200 group">
+                        <div className="bg-orange-100 rounded-full p-3 group-hover:bg-orange-200 transition-colors">
+                          <FileAudio className="text-orange-600" size={20} />
+                        </div>
+                        <p className="text-sm font-medium text-gray-700">Audio</p>
+                      </div>
+                      <div onClick={() => setAttachmentType("poll")} className="flex flex-col items-center gap-2 cursor-pointer hover:bg-red-50 rounded-xl p-3 transition-all duration-200 group col-span-2">
+                        <div className="bg-red-100 rounded-full p-3 group-hover:bg-red-200 transition-colors">
+                          <VoteIcon className="text-red-600" size={20} />
+                        </div>
+                        <p className="text-sm font-medium text-gray-700">Poll</p>
+                      </div>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+                <input
+                  type={attachmentType === "image" ? "file" : attachmentType === "video" ? "file" : attachmentType === "document" ? "file" : attachmentType === "audio" ? "file" : "file"}
+                  ref={attachmentRef}
+                  className="hidden"
+                  onChange={handleAttachmentChange}
+                />
                 <input
                   type="text"
                   className="flex-1 bg-transparent outline-none text-gray-800 placeholder-gray-500"

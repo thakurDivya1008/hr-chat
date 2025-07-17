@@ -42,24 +42,29 @@ const AppLayout = () => {
 
       <div className="bg-gray-100">
         <div
-          className="w-full flex gap-[15px]  h-[100vh] overflow-hidden pt-5"
+          className="relative w-full flex gap-[15px]  h-[100vh] overflow-hidden pt-5"
           style={{ scrollbarWidth: "none" }}
         >
           <div
-            className={`transition-all duration-500 md:w-[390px] w-[250px] absolute md:relative md:px-2 md:pe-0  z-10 ${isOpen ? "left-0" : "left-[-350px]"
-              } `}
+            className={`md:flex hidden transition-all duration-500 md:w-[390px] w-[250px] absolute md:relative md:px-2 md:pe-0  z-10
+              }= `}
           >
             <Sidebar role={user?.role} />
           </div>
+
           <div
-            className="w-full h-full overflow-y-scroll pe-5"
+            className="w-full h-full overflow-y-scroll md:pe-5"
             style={{ scrollbarWidth: "none" }}
           >
             <Routes>
               <Route path="/" element={<ChatScreen />} />
             </Routes>
           </div>
+
           {activeMacro && <div className="w-[300px]"></div>}
+          <div className="w-full absolute bottom-0 left-0 right-0 md:hidden flex justify-between items-center">
+            <Sidebar role={user?.role} isMobile={true} />
+          </div>
         </div>
       </div>
     </SocketProvider>
