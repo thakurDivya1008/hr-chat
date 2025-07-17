@@ -28,5 +28,14 @@ const upload = multer({
     }
 });
 
+const UploadToCloudinary = async (file) => {
+    try {
+        const result = await cloudinary.uploader.upload(file.path);
+        return result.secure_url;
+    } catch (error) {
+        console.error("Error uploading to Cloudinary:", error);
+        throw error;
+    }
+};
 
-module.exports =upload;
+module.exports = { upload, UploadToCloudinary };

@@ -14,13 +14,16 @@ import { useDispatch, useSelector } from "react-redux";
 import { useSocket } from "@/services/socket/socketContext";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { formatDateTime, formatTime,getDayLabel } from "@/utils/dateFormater";
+
+
 
 
 const ChatScreen = () => {
   const socket = useSocket();
   const dispatch = useDispatch();
   const { activeChat } = useSelector((state) => state.chat);
-  const { user,userList } = useSelector((state) => state.auth);
+  const { user, userList } = useSelector((state) => state.auth);
   const messages = useSelector((state) => state.chat.activeChat?.messages);
   const [newMessage, setNewMessage] = useState("");
   const messageEndRef = useRef(null);
@@ -94,6 +97,8 @@ const ChatScreen = () => {
     }
   };
 
+  
+
   return (
     <>
       {
@@ -144,30 +149,51 @@ const ChatScreen = () => {
             {/** message list */}
             <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
               <div className="space-y-3">
-                {messages.map((message) => (
-                  <div
-                    key={message?._id}
-                    className={`flex ${message?.sender?._id === user?._id ? "justify-end" : "justify-start"
-                      }`}
-                  >
-                    <div
-                      className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl ${message?.sender?._id === user?._id
-                        ? "bg-blue-500 text-white rounded-tr-none"
-                        : "bg-gray-200 text-gray-800 rounded-tl-none"
-                        }`}
-                    >
-                      <p>{message?.content}</p>
-                      <p
-                        className={`text-xs mt-1 ${message?.sender?._id === user?._id
-                          ? "text-blue-100"
-                          : "text-gray-500"
-                          }`}
-                      >
-                        {message?.createdAt?.toLocaleString()}
-                      </p>
-                    </div>
-                  </div>
-                ))}
+                {Array.isArray(messages) && messages.length > 0 && (() => {
+                  let lastMessageDate = null;
+                  return messages.map((message, idx) => {
+                    const messageDate = new Date(message.createdAt);
+                    const messageDay = messageDate.toDateString();
+                    let showDayLabel = false;
+
+                    if (lastMessageDate !== messageDay) {
+                      showDayLabel = true;
+                      lastMessageDate = messageDay;
+                    }
+
+                    return (
+                      <React.Fragment key={message?._id}>
+                        {showDayLabel && (
+                          <div className="flex justify-center my-2">
+                            <span className="bg-gray-300 text-gray-700 text-xs px-3 py-1 rounded-full">
+                              {getDayLabel(message.createdAt)}
+                            </span>
+                          </div>
+                        )}
+                        <div
+                          className={`flex ${message?.sender?._id === user?._id ? "justify-end" : "justify-start"}`}
+                        >
+                          <div
+                            className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl ${message?.sender?._id === user?._id
+                              ? "bg-blue-500 text-white rounded-tr-none"
+                              : "bg-gray-200 text-gray-800 rounded-tl-none"
+                              }`}
+                          >
+                            <p>{message?.content}</p>
+                            <p
+                              className={`text-xs mt-1 ${message?.sender?._id === user?._id
+                                ? "text-blue-100"
+                                : "text-gray-500"
+                                }`}
+                            >
+                              {formatTime(message?.createdAt)}
+                            </p>
+                          </div>
+                        </div>
+                      </React.Fragment>
+                    );
+                  });
+                })()}
                 {typingUser && (
                   <div className="text-xs text-black mb-2 flex items-center gap-1">
                     {userList.find((item) => item?._id === typingUser)?.username || "Someone"} is typing
