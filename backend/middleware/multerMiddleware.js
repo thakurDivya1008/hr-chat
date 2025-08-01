@@ -1,5 +1,5 @@
 const multer =require("multer");
-
+const cloudinary = require("../config/cloudinaryConfig");
 //set storage engine
 const storage= multer.diskStorage({
     destination:(req,file,cb)=>{

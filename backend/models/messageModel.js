@@ -11,9 +11,27 @@ const MessageSchema = new mongoose.Schema(
       trim: true,
       required: false,
     },
+    file:{
+      url:{
+        type: String,
+        required: false,
+      },
+      type:{
+        type: String,
+        required: false,
+      },
+      name:{
+        type: String,
+        required: false,
+      },
+      size:{
+        type: Number,
+        required: false,
+      },
+    },
     chat: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Chat",
+      ref: "chat",
     },
   },
   {
